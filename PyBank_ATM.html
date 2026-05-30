@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyBank ATM</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;background:#0a1628;display:flex;align-items:center;justify-content:center;padding:2rem}
+.atm-wrap{width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+.atm-header{text-align:center;color:#fff}
+.atm-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px}
+.logo-icon{width:46px;height:46px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.logo-icon i{color:#fff;font-size:24px}
+.bank-name{font-size:26px;font-weight:600;letter-spacing:1px;color:#fff}
+.bank-tagline{font-size:12px;color:#94a3b8;letter-spacing:3px;text-transform:uppercase}
+.card-panel{background:#fff;border-radius:20px;width:100%;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.5)}
+.screen{padding:2rem}
+.screen-title{font-size:20px;font-weight:600;color:#1e293b;margin-bottom:4px}
+.screen-sub{font-size:13px;color:#64748b;margin-bottom:1.5rem}
+.input-group{margin-bottom:1rem}
+.input-group label{display:block;font-size:11px;font-weight:600;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px}
+.input-group input{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;color:#1e293b;outline:none;transition:border-color 0.2s,box-shadow 0.2s;background:#f8fafc;font-family:inherit}
+.input-group input:focus{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s,transform 0.1s;font-family:inherit;letter-spacing:0.3px}
+.btn-primary:hover{opacity:0.92}
+.btn-primary:active{transform:scale(0.98)}
+.btn-secondary{width:100%;padding:11px;background:#f1f5f9;color:#475569;border:none;border-radius:11px;font-size:14px;cursor:pointer;margin-top:8px;font-family:inherit;font-weight:500;transition:background 0.2s}
+.btn-secondary:hover{background:#e2e8f0}
+.divider{display:flex;align-items:center;gap:10px;margin:1rem 0}
+.divider span{font-size:12px;color:#94a3b8;white-space:nowrap}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem}
+.menu-btn{padding:18px 12px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:13px;cursor:pointer;text-align:center;transition:all 0.2s;font-family:inherit}
+.menu-btn:hover{background:#eff6ff;border-color:#2563eb;transform:translateY(-1px)}
+.menu-btn i{font-size:24px;color:#2563eb;display:block;margin-bottom:7px}
+.menu-btn span{font-size:12px;font-weight:600;color:#475569;display:block}
+.menu-btn-wide{grid-column:1/-1;display:flex;align-items:center;gap:10px;justify-content:center;padding:14px}
+.menu-btn-wide i{margin-bottom:0;font-size:20px}
+.acct-banner{background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:14px;padding:18px;color:#fff;margin-bottom:1.2rem;position:relative;overflow:hidden}
+.acct-banner::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,0.06);border-radius:50%}
+.acct-banner::after{content:'';position:absolute;bottom:-20px;right:40px;width:80px;height:80px;background:rgba(255,255,255,0.04);border-radius:50%}
+.acct-banner .name{font-size:15px;font-weight:600;margin-bottom:2px;opacity:0.95}
+.acct-banner .number{font-size:12px;opacity:0.7;letter-spacing:1.5px;font-family:monospace}
+.acct-banner .balance-label{font-size:11px;opacity:0.65;margin-top:14px;text-transform:uppercase;letter-spacing:1px}
+.acct-banner .balance-val{font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-top:2px}
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #f1f5f9}
+.hist-row:last-child{border-bottom:none}
+.hist-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hist-icon.in{background:#dcfce7}
+.hist-icon.in i{color:#16a34a;font-size:18px}
+.hist-icon.out{background:#fee2e2}
+.hist-icon.out i{color:#dc2626;font-size:18px}
+.hist-info{flex:1;padding:0 12px}
+.hist-info .htitle{font-size:13px;font-weight:600;color:#1e293b}
+.hist-info .hdate{font-size:11px;color:#94a3b8;margin-top:2px}
+.hist-amount.in{color:#16a34a;font-weight:700;font-size:13px}
+.hist-amount.out{color:#dc2626;font-weight:700;font-size:13px}
+.profile-avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;margin:0 auto 12px;box-shadow:0 8px 24px rgba(37,99,235,0.3)}
+.profile-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #f1f5f9;font-size:14px}
+.profile-row:last-child{border-bottom:none}
+.profile-row .pk{color:#64748b;display:flex;align-items:center;gap:7px}
+.profile-row .pv{font-weight:600;color:#1e293b}
+.alert-success{background:#dcfce7;color:#166534;border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;border:1px solid #bbf7d0}
+.alert-error{background:#fee2e2;color:#991b1b;border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;border:1px solid #fecaca}
+.badge-new{display:inline-block;background:#eff6ff;color:#2563eb;font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;margin-bottom:12px;border:1px solid #bfdbfe}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin:1rem 0}
+.pin-dot{width:18px;height:18px;border-radius:50%;background:#e2e8f0;transition:all 0.2s;border:2px solid #e2e8f0}
+.pin-dot.filled{background:#2563eb;border-color:#2563eb;transform:scale(1.1)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:0.5rem}
+.num-btn{padding:15px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:11px;font-size:19px;font-weight:600;color:#1e293b;cursor:pointer;text-align:center;font-family:inherit;transition:all 0.15s}
+.num-btn:hover{background:#eff6ff;border-color:#2563eb;color:#2563eb}
+.num-btn:active{transform:scale(0.93)}
+.locked-badge{background:#fef3c7;color:#92400e;border-radius:10px;padding:13px;font-size:13px;text-align:center;margin-bottom:1rem;display:flex;align-items:center;gap:8px;justify-content:center;border:1px solid #fde68a}
+.receipt-box{background:#f8fafc;border:1px dashed #94a3b8;border-radius:12px;padding:16px;font-size:13px;color:#334155;margin-bottom:1rem}
+.receipt-row{display:flex;justify-content:space-between;padding:5px 0}
+.receipt-row.total{border-top:1px dashed #94a3b8;margin-top:8px;padding-top:10px;font-weight:700;color:#1e293b;font-size:14px}
+.mini-chart{display:flex;align-items:flex-end;gap:7px;height:65px;margin:1rem 0;padding:0 2px}
+.bar{flex:1;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#2563eb,#7c3aed);opacity:0.75;transition:opacity 0.2s,transform 0.2s;cursor:pointer}
+.bar:hover{opacity:1;transform:scaleY(1.05);transform-origin:bottom}
+.amount-display{text-align:center;font-size:38px;font-weight:700;color:#1e293b;padding:12px 0;letter-spacing:-1.5px}
+.amount-small{text-align:center;font-size:12px;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.success-circle{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.hero-img{width:100%;height:150px;object-fit:cover;border-radius:13px;object-position:center;margin-bottom:1.2rem}
+.back-btn{background:none;border:none;cursor:pointer;color:#64748b;padding:0;margin-bottom:1.2rem;display:flex;align-items:center;gap:6px;font-size:13px;font-family:inherit;font-weight:500;transition:color 0.2s}
+.back-btn:hover{color:#2563eb}
+.quick-btn{flex:1;padding:9px 4px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid;transition:all 0.2s}
+.quick-btn:hover{transform:translateY(-1px)}
+.info-box{border-radius:10px;padding:11px;font-size:12px;margin-bottom:1rem;display:flex;align-items:flex-start;gap:8px}
+.footer-bar{color:#475569;font-size:12px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px}
+</style>
+</head>
+<body>
+<div class="atm-wrap">
+  <div class="atm-header">
+    <div class="atm-logo">
+      <div class="logo-icon"><i class="ti ti-building-bank"></i></div>
+      <span class="bank-name">PyBank</span>
+    </div>
+    <div class="bank-tagline">Secure &middot; Smart &middot; Swift</div>
+  </div>
+
+  <div class="card-panel">
+    <div id="app" class="screen"></div>
+  </div>
+
+  <div class="footer-bar">
+    <i class="ti ti-shield-lock" style="font-size:15px"></i>
+    256-bit encrypted &nbsp;&middot;&nbsp; All data stored locally on your device
+  </div>
+</div>
+
+<script>
+const DB_KEY='pybank_users';
+let db={};
+let session=null;
+
+function loadDB(){try{db=JSON.parse(localStorage.getItem(DB_KEY)||'{}')}catch(e){db={}}}
+function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(db))}
+loadDB();
+
+function ts(){return new Date().toLocaleString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function randAcc(){return String(Math.floor(100000+Math.random()*899999))}
+function fmt(n){return '₹'+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function addHist(acc,msg){db[acc].history.push(ts()+' → '+msg);saveDB()}
+
+const app=document.getElementById('app');
+function render(html){app.innerHTML=html}
+
+function backBtn(fn){
+  return `<button class="back-btn" onclick="${fn}()"><i class="ti ti-arrow-left" style="font-size:18px"></i> Back to Dashboard</button>`;
+}
+
+function showHome(){
+  session=null;
+  render(`
+    <span class="badge-new">✦ Welcome to PyBank</span>
+    <div class="screen-title">Your Digital ATM</div>
+    <div class="screen-sub">Fast, secure banking at your fingertips</div>
+    <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=500&q=80" class="hero-img" alt="Banking" onerror="this.style.display='none'">
+    <button class="btn-primary" onclick="showLogin()"><i class="ti ti-login"></i> &nbsp;Login to Account</button>
+    <div class="divider"><span>new here?</span></div>
+    <button class="btn-secondary" onclick="showCreate()"><i class="ti ti-user-plus"></i> &nbsp;Open New Account</button>
+  `);
+}
+
+function showCreate(){
+  render(`
+    <button class="back-btn" onclick="showHome()"><i class="ti ti-arrow-left" style="font-size:18px"></i> Back</button>
+    <div class="screen-title">Create Account</div>
+    <div class="screen-sub">Join PyBank in seconds — it's free</div>
+    <div id="c-msg"></div>
+    <div class="input-group"><label>Full Name</label><input id="c-name" type="text" placeholder="e.g. Ravi Kumar" autocomplete="off"></div>
+    <div class="input-group"><label>Create 4-digit PIN</label><input id="c-pin" type="password" maxlength="4" placeholder="••••" autocomplete="new-password"></div>
+    <div class="input-group"><label>Initial Deposit (₹)</label><input id="c-dep" type="number" placeholder="1000" min="0"></div>
+    <button class="btn-primary" onclick="doCreate()">Create My Account &rarr;</button>
+    <button class="btn-secondary" onclick="showHome()">Cancel</button>
+  `);
+}
+
+function doCreate(){
+  const name=document.getElementById('c-name').value.trim();
+  const pin=document.getElementById('c-pin').value.trim();
+  const dep=parseFloat(document.getElementById('c-dep').value)||0;
+  const msg=document.getElementById('c-msg');
+  if(!name){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Please enter your name.</div>';return}
+  if(pin.length!==4||isNaN(Number(pin))){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> PIN must be exactly 4 digits.</div>';return}
+  const acc=randAcc();
+  db[acc]={name,pin,balance:dep,history:dep>0?[ts()+' → Initial deposit '+fmt(dep)]:[],attempts:0};
+  saveDB();
+  render(`
+    <div style="text-align:center;padding:1.5rem 0">
+      <div class="success-circle" style="background:#dcfce7"><i class="ti ti-check" style="font-size:34px;color:#16a34a"></i></div>
+      <div class="screen-title">Account Created! 🎉</div>
+      <div class="screen-sub">Welcome to PyBank, ${name}</div>
+      <div style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1.5px solid #bfdbfe;border-radius:14px;padding:20px;margin:1.2rem 0;text-align:left">
+        <div style="font-size:11px;color:#6366f1;margin-bottom:6px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Your Account Number</div>
+        <div style="font-size:32px;font-weight:800;color:#2563eb;letter-spacing:4px;font-family:monospace">${acc}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:10px">Opening Balance: <strong style="color:#16a34a">${fmt(dep)}</strong></div>
+      </div>
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:9px;padding:10px;font-size:12px;color:#991b1b;margin-bottom:1.2rem;display:flex;align-items:center;gap:7px"><i class="ti ti-alert-triangle"></i> Screenshot or note your account number — you need it to login!</div>
+      <button class="btn-primary" onclick="showLogin()">Proceed to Login &rarr;</button>
+    </div>
+  `);
+}
+
+function showLogin(){
+  window._pin=[];
+  render(`
+    <button class="back-btn" onclick="showHome()"><i class="ti ti-arrow-left" style="font-size:18px"></i> Back</button>
+    <div class="screen-title">Welcome Back</div>
+    <div class="screen-sub">Enter your credentials to continue</div>
+    <div id="l-msg"></div>
+    <div class="input-group"><label>Account Number</label><input id="l-acc" type="text" placeholder="6-digit account number" maxlength="6" autocomplete="off"></div>
+    <div class="input-group">
+      <label>PIN</label>
+      <div class="pin-dots" id="pin-dots">
+        <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="numpad">
+        ${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k=>`<button class="num-btn" onclick="numKey('${k}')">${k||''}</button>`).join('')}
+      </div>
+    </div>
+    <button class="btn-primary" style="margin-top:0.8rem" onclick="doLogin()"><i class="ti ti-lock-open"></i> &nbsp;Login</button>
+  `);
+  window.numKey=function(k){
+    if(k==='')return;
+    if(k==='⌫'){window._pin.pop();}
+    else if(window._pin.length<4){window._pin.push(k);}
+    for(let i=0;i<4;i++){const el=document.getElementById('pd'+i);if(el)el.className='pin-dot'+(i<window._pin.length?' filled':'');}
+  };
+}
+
+function doLogin(){
+  const acc=document.getElementById('l-acc').value.trim();
+  const pin=window._pin.join('');
+  const msg=document.getElementById('l-msg');
+  if(!db[acc]){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Account not found. Check your account number.</div>';return}
+  if(db[acc].attempts>=3){msg.innerHTML='<div class="locked-badge"><i class="ti ti-lock"></i> Account locked after 3 failed attempts. Contact support.</div>';return}
+  if(pin===db[acc].pin){
+    db[acc].attempts=0;saveDB();session=acc;showDashboard();
+  } else {
+    db[acc].attempts++;saveDB();
+    const left=3-db[acc].attempts;
+    msg.innerHTML=`<div class="alert-error"><i class="ti ti-alert-circle"></i> Incorrect PIN. <strong>${left} attempt${left===1?'':'s'}</strong> remaining.</div>`;
+    window._pin=[];
+    for(let i=0;i<4;i++){const el=document.getElementById('pd'+i);if(el)el.className='pin-dot';}
+  }
+}
+
+function showDashboard(){
+  const u=db[session];
+  const barH=[38,60,28,85,50,72,95];
+  const bars=barH.map((v,i)=>`<div class="bar" style="height:${v}%" title="Day ${i+1}"></div>`).join('');
+  render(`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-size:13px;color:#64748b">Hello, <strong style="color:#1e293b">${u.name.split(' ')[0]}</strong> 👋</div>
+      <button onclick="showHome()" style="background:none;border:1.5px solid #e2e8f0;border-radius:9px;padding:7px 12px;cursor:pointer;color:#64748b;font-size:12px;font-family:inherit;font-weight:500;display:flex;align-items:center;gap:5px;transition:all 0.2s" onmouseover="this.style.borderColor='#dc2626';this.style.color='#dc2626'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'"><i class="ti ti-logout" style="font-size:15px"></i> Logout</button>
+    </div>
+    <div class="acct-banner">
+      <div class="name">${u.name}</div>
+      <div class="number">ACC ●●●● ${session.slice(-3)}</div>
+      <div class="balance-label">Available Balance</div>
+      <div class="balance-val">${fmt(u.balance)}</div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Weekly Activity</div>
+    <div class="mini-chart">${bars}</div>
+    <div class="menu-grid">
+      <button class="menu-btn" onclick="showDeposit()"><i class="ti ti-arrow-down-circle"></i><span>Deposit</span></button>
+      <button class="menu-btn" onclick="showWithdraw()"><i class="ti ti-arrow-up-circle"></i><span>Withdraw</span></button>
+      <button class="menu-btn" onclick="showTransfer()"><i class="ti ti-arrows-exchange"></i><span>Transfer</span></button>
+      <button class="menu-btn" onclick="showHistory()"><i class="ti ti-history"></i><span>History</span></button>
+      <button class="menu-btn" onclick="showProfile()"><i class="ti ti-user-circle"></i><span>Profile</span></button>
+      <button class="menu-btn" onclick="showChangePin()"><i class="ti ti-lock"></i><span>Change PIN</span></button>
+      <button class="menu-btn menu-btn-wide" onclick="showReceipt()"><i class="ti ti-receipt"></i><span>Generate Receipt</span></button>
+    </div>
+  `);
+}
+
+function showDeposit(){
+  render(`
+    ${backBtn('showDashboard')}
+    <div class="screen-title">Deposit Funds</div>
+    <div class="screen-sub">Add money to your account instantly</div>
+    <div id="d-msg"></div>
+    <div class="amount-small">Amount to Deposit</div>
+    <div class="amount-display" id="d-disp">₹ 0</div>
+    <div class="input-group"><label>Enter Amount (₹)</label><input id="d-amt" type="number" placeholder="0.00" min="1" oninput="document.getElementById('d-disp').textContent='₹ '+(parseFloat(this.value)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})"></div>
+    <div style="display:flex;gap:8px;margin-bottom:1.2rem">
+      ${[500,1000,5000,10000].map(v=>`<button class="quick-btn" style="background:#eff6ff;border-color:#bfdbfe;color:#2563eb" onclick="document.getElementById('d-amt').value=${v};document.getElementById('d-disp').textContent='₹ ${Number(v).toLocaleString('en-IN',{minimumFractionDigits:2})}'">₹${v>=1000?v/1000+'k':v}</button>`).join('')}
+    </div>
+    <button class="btn-primary" onclick="doDeposit()"><i class="ti ti-arrow-down-circle"></i> &nbsp;Deposit Now</button>
+  `);
+}
+
+function doDeposit(){
+  const amt=parseFloat(document.getElementById('d-amt').value);
+  const msg=document.getElementById('d-msg');
+  if(!amt||amt<=0){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Please enter a valid amount.</div>';return}
+  db[session].balance+=amt;addHist(session,'Deposited '+fmt(amt));
+  render(`
+    <div style="text-align:center;padding:1.5rem 0">
+      <div class="success-circle" style="background:#dcfce7"><i class="ti ti-check" style="font-size:34px;color:#16a34a"></i></div>
+      <div class="screen-title">Deposit Successful!</div>
+      <div class="screen-sub">Your balance has been updated</div>
+      <div style="font-size:36px;font-weight:800;color:#16a34a;margin:1rem 0;letter-spacing:-1px">+${fmt(amt)}</div>
+      <div style="font-size:14px;color:#64748b">New Balance: <strong style="color:#1e293b">${fmt(db[session].balance)}</strong></div>
+      <button class="btn-primary" style="margin-top:1.5rem" onclick="showDashboard()">Back to Dashboard</button>
+    </div>
+  `);
+}
+
+function showWithdraw(){
+  render(`
+    ${backBtn('showDashboard')}
+    <div class="screen-title">Withdraw Cash</div>
+    <div class="screen-sub">Available: <strong style="color:#2563eb">${fmt(db[session].balance)}</strong></div>
+    <div id="w-msg"></div>
+    <div class="amount-small">Amount to Withdraw</div>
+    <div class="amount-display" id="w-disp">₹ 0</div>
+    <div class="input-group"><label>Enter Amount (₹)</label><input id="w-amt" type="number" placeholder="0.00" min="1" oninput="document.getElementById('w-disp').textContent='₹ '+(parseFloat(this.value)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})"></div>
+    <div style="display:flex;gap:8px;margin-bottom:1.2rem">
+      ${[200,500,2000,5000].map(v=>`<button class="quick-btn" style="background:#fff7ed;border-color:#fed7aa;color:#c2410c" onclick="document.getElementById('w-amt').value=${v};document.getElementById('w-disp').textContent='₹ ${Number(v).toLocaleString('en-IN',{minimumFractionDigits:2})}'">₹${v>=1000?v/1000+'k':v}</button>`).join('')}
+    </div>
+    <button class="btn-primary" onclick="doWithdraw()"><i class="ti ti-arrow-up-circle"></i> &nbsp;Withdraw Cash</button>
+  `);
+}
+
+function doWithdraw(){
+  const amt=parseFloat(document.getElementById('w-amt').value);
+  const msg=document.getElementById('w-msg');
+  if(!amt||amt<=0){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Enter a valid amount.</div>';return}
+  if(amt>db[session].balance){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Insufficient balance.</div>';return}
+  db[session].balance-=amt;addHist(session,'Withdrew '+fmt(amt));
+  render(`
+    <div style="text-align:center;padding:1.5rem 0">
+      <div class="success-circle" style="background:#fee2e2"><i class="ti ti-cash" style="font-size:34px;color:#dc2626"></i></div>
+      <div class="screen-title">Cash Dispensed!</div>
+      <div class="screen-sub">Please collect your cash below</div>
+      <div style="font-size:36px;font-weight:800;color:#dc2626;margin:1rem 0;letter-spacing:-1px">-${fmt(amt)}</div>
+      <div style="font-size:14px;color:#64748b">Remaining Balance: <strong style="color:#1e293b">${fmt(db[session].balance)}</strong></div>
+      <button class="btn-primary" style="margin-top:1.5rem" onclick="showDashboard()">Back to Dashboard</button>
+    </div>
+  `);
+}
+
+function showTransfer(){
+  render(`
+    ${backBtn('showDashboard')}
+    <div class="screen-title">Fund Transfer</div>
+    <div class="screen-sub">Send money to any PyBank account</div>
+    <div id="t-msg"></div>
+    <div class="input-group"><label>Recipient Account Number</label><input id="t-acc" type="text" placeholder="6-digit account number" maxlength="6" autocomplete="off"></div>
+    <div class="input-group"><label>Amount (₹)</label><input id="t-amt" type="number" placeholder="500" min="1"></div>
+    <div class="info-box" style="background:#fefce8;border:1px solid #fde68a;color:#92400e"><i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i><span>Transfers are instant and irreversible. Please verify the account number before sending.</span></div>
+    <button class="btn-primary" onclick="doTransfer()"><i class="ti ti-send"></i> &nbsp;Send Money</button>
+  `);
+}
+
+function doTransfer(){
+  const target=document.getElementById('t-acc').value.trim();
+  const amt=parseFloat(document.getElementById('t-amt').value);
+  const msg=document.getElementById('t-msg');
+  if(!target||!db[target]){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Recipient account not found.</div>';return}
+  if(target===session){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Cannot transfer to your own account.</div>';return}
+  if(!amt||amt<=0){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Enter a valid amount.</div>';return}
+  if(amt>db[session].balance){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Insufficient balance.</div>';return}
+  db[session].balance-=amt;db[target].balance+=amt;
+  addHist(session,'Transferred '+fmt(amt)+' to Acc '+target);
+  addHist(target,'Received '+fmt(amt)+' from Acc '+session);
+  render(`
+    <div style="text-align:center;padding:1.5rem 0">
+      <div class="success-circle" style="background:#dbeafe"><i class="ti ti-arrows-exchange" style="font-size:34px;color:#2563eb"></i></div>
+      <div class="screen-title">Transfer Successful!</div>
+      <div class="screen-sub">Sent to Account ${target} &bull; ${db[target].name}</div>
+      <div style="font-size:36px;font-weight:800;color:#2563eb;margin:1rem 0;letter-spacing:-1px">${fmt(amt)}</div>
+      <div style="font-size:14px;color:#64748b">Your Balance: <strong style="color:#1e293b">${fmt(db[session].balance)}</strong></div>
+      <button class="btn-primary" style="margin-top:1.5rem" onclick="showDashboard()">Back to Dashboard</button>
+    </div>
+  `);
+}
+
+function showHistory(){
+  const h=db[session].history;
+  const rows=h.length===0
+    ?'<div style="text-align:center;padding:2.5rem;color:#94a3b8"><i class="ti ti-history" style="font-size:48px;display:block;margin-bottom:10px;opacity:0.4"></i>No transactions yet</div>'
+    :[...h].reverse().map(item=>{
+        const isIn=item.includes('Deposit')||item.includes('Received');
+        const parts=item.split('→');
+        return `<div class="hist-row">
+          <div class="hist-icon ${isIn?'in':'out'}"><i class="ti ti-${isIn?'arrow-down':'arrow-up'}"></i></div>
+          <div class="hist-info"><div class="htitle">${parts[1]?.trim()||item}</div><div class="hdate">${parts[0]?.trim()}</div></div>
+          <div class="hist-amount ${isIn?'in':'out'}">${isIn?'↓':'↑'}</div>
+        </div>`;
+      }).join('');
+  render(`
+    ${backBtn('showDashboard')}
+    <div class="screen-title">Transaction History</div>
+    <div class="screen-sub">${h.length} total transaction${h.length!==1?'s':''}</div>
+    <div style="max-height:380px;overflow-y:auto;padding-right:2px">${rows}</div>
+  `);
+}
+
+function showProfile(){
+  const u=db[session];
+  const initials=u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  render(`
+    ${backBtn('showDashboard')}
+    <div class="profile-avatar">${initials}</div>
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:20px;font-weight:700;color:#1e293b">${u.name}</div>
+      <div style="font-size:13px;color:#64748b;margin-top:3px">PyBank Premium Member</div>
+      <div style="display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 10px;border-radius:20px;margin-top:6px;font-weight:600;border:1px solid #bbf7d0">● Active Account</div>
+    </div>
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px">
+      <div class="profile-row"><span class="pk"><i class="ti ti-credit-card" style="font-size:16px"></i> Account No.</span><span class="pv" style="font-family:monospace;letter-spacing:1px">${session}</span></div>
+      <div class="profile-row"><span class="pk"><i class="ti ti-wallet" style="font-size:16px"></i> Balance</span><span class="pv" style="color:#2563eb">${fmt(u.balance)}</span></div>
+      <div class="profile-row"><span class="pk"><i class="ti ti-receipt" style="font-size:16px"></i> Transactions</span><span class="pv">${u.history.length}</span></div>
+      <div class="profile-row"><span class="pk"><i class="ti ti-shield-check" style="font-size:16px"></i> Security</span><span class="pv" style="color:#16a34a">PIN Protected ✓</span></div>
+    </div>
+  `);
+}
+
+function showChangePin(){
+  render(`
+    ${backBtn('showDashboard')}
+    <div class="screen-title">Change PIN</div>
+    <div class="screen-sub">Keep your account secure with a strong PIN</div>
+    <div id="cp-msg"></div>
+    <div class="input-group"><label>Current PIN</label><input id="cp-old" type="password" maxlength="4" placeholder="••••"></div>
+    <div class="input-group"><label>New PIN</label><input id="cp-new" type="password" maxlength="4" placeholder="••••" autocomplete="new-password"></div>
+    <div class="input-group"><label>Confirm New PIN</label><input id="cp-con" type="password" maxlength="4" placeholder="••••" autocomplete="new-password"></div>
+    <button class="btn-primary" onclick="doChangePin()"><i class="ti ti-lock"></i> &nbsp;Update PIN</button>
+  `);
+}
+
+function doChangePin(){
+  const old=document.getElementById('cp-old').value;
+  const nw=document.getElementById('cp-new').value;
+  const con=document.getElementById('cp-con').value;
+  const msg=document.getElementById('cp-msg');
+  if(old!==db[session].pin){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> Current PIN is incorrect.</div>';return}
+  if(nw.length!==4||isNaN(Number(nw))){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> New PIN must be exactly 4 digits.</div>';return}
+  if(nw!==con){msg.innerHTML='<div class="alert-error"><i class="ti ti-alert-circle"></i> PINs do not match. Try again.</div>';return}
+  db[session].pin=nw;saveDB();
+  document.getElementById('cp-msg').innerHTML='<div class="alert-success"><i class="ti ti-check"></i> PIN changed successfully! Keep it safe.</div>';
+}
+
+function showReceipt(){
+  const u=db[session];
+  const last5=[...u.history].slice(-5).reverse();
+  const rows=last5.length===0
+    ?'<div style="color:#94a3b8;font-size:12px;text-align:center;padding:8px 0">No transactions recorded</div>'
+    :last5.map(i=>`<div class="receipt-row"><span>${i.split('→')[1]?.trim()||i}</span><span style="color:#94a3b8;font-size:11px">${i.split('→')[0]?.trim()}</span></div>`).join('');
+  render(`
+    ${backBtn('showDashboard')}
+    <div class="screen-title">Account Receipt</div>
+    <div class="screen-sub">Last 5 transactions summary</div>
+    <div class="receipt-box">
+      <div style="text-align:center;padding-bottom:12px;border-bottom:1px dashed #94a3b8;margin-bottom:12px">
+        <div style="font-size:16px;font-weight:700;color:#1e293b;letter-spacing:1px">PyBank</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:3px;text-transform:uppercase;letter-spacing:1px">Official Mini Statement</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px">${ts()}</div>
+      </div>
+      <div class="receipt-row"><span style="color:#64748b">Account</span><span style="font-family:monospace;font-weight:600">${session}</span></div>
+      <div class="receipt-row"><span style="color:#64748b">Account Holder</span><span style="font-weight:600">${u.name}</span></div>
+      <div class="receipt-row total"><span>Available Balance</span><span style="color:#2563eb">${fmt(u.balance)}</span></div>
+      <div style="margin-top:14px;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:8px">Recent Transactions</div>
+      ${rows}
+      <div style="text-align:center;font-size:10px;color:#cbd5e1;margin-top:14px;padding-top:10px;border-top:1px dashed #e2e8f0">Thank you for banking with PyBank</div>
+    </div>
+    <button class="btn-primary" onclick="showDashboard()"><i class="ti ti-check"></i> &nbsp;Done</button>
+  `);
+}
+
+showHome();
+</script>
+</body>
+</html>
